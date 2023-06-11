@@ -1,4 +1,4 @@
-#Machine Learning Project Repository
+#Machine_Learning 
 This repository contains a collection of my machine learning projects, showcasing both research and industry-based projects. Each project focuses on different aspects of machine learning, including data preprocessing, model development, evaluation, and deployment.
 
 Projects
