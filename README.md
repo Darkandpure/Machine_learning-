@@ -15,8 +15,6 @@ To run the projects locally, follow these steps:
 
 Clone the repository:
 
-shell
-Copy code
 git clone https://github.com/darkandpure/machine-learning-projects.git
 Install the required dependencies:
 
