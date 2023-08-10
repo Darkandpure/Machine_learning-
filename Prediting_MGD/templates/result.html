@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MGD Prediction Results</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+</head>
+<body>
+    <h1>MGD Prediction Results</h1>
+    <h2>Model: {{ model_name }}</h2> <!-- Display Model Name -->
+    <h3>R^2 "Accuracy": {{ r2_score }}%</h3> <!-- Display R^2 Score as Percentage -->
+    <div id="predicted_mgd"></div>
+    <div id="hour_vs_mgd" style="height: 400px;"></div>
+    <div id="month_vs_mgd" style="height: 400px;"></div>
+
+    <script>
+        var data = {{ graph_data|tojson|safe }};
+        console.log(data);
+
+        var predictions = {{ predictions|tojson|safe }};
+
+        document.getElementById('predicted_mgd').innerHTML = '<h2>Predicted MGD:</h2>' + predictions.join(', ');
+
+        var hour_vs_mgd_trace = {
+            x: data.hour_vs_mgd.hour,
+            y: data.hour_vs_mgd.mgd,
+            mode: 'markers',
+            type: 'scatter'
+        };
+
+        var layout = {
+            title: 'Hourly Variation of Water Usage (MGD) in Miami, USA',
+            xaxis: {
+                title: 'Hour'
+            },
+            yaxis: {
+                title: 'MGD'
+            }
+        };
+
+        Plotly.newPlot('hour_vs_mgd', [hour_vs_mgd_trace], layout);
+
+
+
+        var month_names = ['', "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        var validMonthIndices = data.month_vs_mgd.month.filter(month => month >= 1 && month <= 12);  
+        // Ensure the month is between 1 and 12
+
+        var validMonths = validMonthIndices.map(num => month_names[num]);
+        var validMGDs = data.month_vs_mgd.mgd.filter((_, index) => month_names[data.month_vs_mgd.month[index]] !== "");
+        var sortedIndices = validMonthIndices.map((value, index) => index).sort((a, b) => validMonthIndices[a] - validMonthIndices[b]);
+        var sortedMonths = sortedIndices.map(index => validMonths[index]);
+        var sortedMGDs = sortedIndices.map(index => validMGDs[index]);
+        
+        // Compute average MGD for each month
+        var monthMGDSums = {};
+        var monthCounts = {};
+        sortedMonths.forEach((month, index) => {
+           if (!monthMGDSums[month]) {
+              monthMGDSums[month] = 0;
+              monthCounts[month] = 0;
+            }
+            monthMGDSums[month] += sortedMGDs[index];
+            monthCounts[month]++;
+        });
+        var avgMGDPerMonth = month_names.slice(1).map(month => monthMGDSums[month] / (monthCounts[month] || 1));
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        var month_vs_mgd_trace = {
+            x: month_names.slice(1),  // slice(1) removes the empty string at the beginning
+            y: avgMGDPerMonth,
+            mode: 'lines + markers',
+            type: 'scatter'
+        };
+
+        layout.title = 'Monthly Variation of Water Usage (MGD) in Miami, USA';
+        layout.xaxis = {
+           title: 'Month',
+           type: 'category'  // this specifies the x-axis as categorical
+        };
+
+        Plotly.newPlot('month_vs_mgd', [month_vs_mgd_trace], layout);
+    </script>
+</body>
+</html>
